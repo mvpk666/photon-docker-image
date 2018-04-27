@@ -17,27 +17,18 @@ Maintainers: Fabio Rapposelli <fabio@vmware.com> (@frapposelli),
              Alexey Makhalov <amakhalov@vmware.com> (@YustasSwamp)
 GitRepo: https://github.com/vmware/photon-docker-image.git
 Directory: docker
-
 EOF
 
 latestTag=", latest"
 
 for version in $versions ; do
-  extraTags=", $version$latestTag"
+  branchLine=$(git ls-remote --heads origin $version\* | sort -r -k2 | head -n1)
+  branch=${branchLine: -12}
+  commit=${branchLine:0:40}
+  echo >> photon
+  echo "Tags: $version, $branch$latestTag" >> photon
+  echo "GitFetch: refs/heads/$branch" >> photon
+  echo "GitCommit: $commit" >> photon
   latestTag=""
-  git ls-remote --heads origin $version\* | sort -r -k2 | while read branchLine ; do
-    branch=${branchLine: -12}
-    commit=${branchLine:0:40}
-    echo "Tags: $branch$extraTags" >> photon
-    echo "GitFetch: refs/heads/$branch" >> photon
-    echo "GitCommit: $commit" >> photon
-    echo >> photon
-    extraTags=""
-  done
 done
 
-cat >> photon << EOF
-Tags: 1.0GA
-GitFetch: refs/heads/dist
-GitCommit: 2043d10673cdb19ef656cbe0686e62345f4517b2
-EOF
